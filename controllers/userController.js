@@ -27,11 +27,14 @@ exports.registerUser = async (req, res) => {
     if (existingUser) res.status(400).json({ message: "user already exist" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
+    const optExpire = Date.now() + 10 * 60 * 60 * 1000;
+    const otp = Math.floor(100000 + Math.random() * 900000);
     const newUser = await User.create({
       name,
       phone,
       email,
+      otp,
+      optExpire,
       password: hashedPassword,
     });
     await newUser.save();
@@ -45,11 +48,10 @@ exports.registerUser = async (req, res) => {
     );
 
     res.cookie("token", token, { httpOnly: true });
-    const otp = Math.floor(100000 + Math.random() * 900000); // Example OTP
 
     await sendEmail({
       to: email,
-      subject: 'Verify Your Email',
+      subject: "Verify Your Email",
       html: `
         <h1>Welcome to Our Platform, ${name}!</h1>
         <p>Thank you for registering. Your OTP code is <strong>${otp}</strong>. It will expire in 10 minutes.</p>
@@ -91,12 +93,18 @@ exports.login = async (req, res) => {
     );
 
     res.cookie("token", token, { httpOnly: true });
+    const otp = Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit OTP
+    const otpExpire = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
+
+    user.otp = otp;
+    user.optExpire = otpExpire;
+    await user.save();
 
     await sendEmail({
       to: email,
-      subject: 'Verify Your Email',
+      subject: "Verify Your Email",
       html: `
-        <h1>Welcome to Our Platform, ${name}!</h1>
+        <h1>Welcome to Our Platform,!</h1>
         <p>Thank you for registering. Your OTP code is <strong>${otp}</strong>. It will expire in 10 minutes.</p>
       `,
     });
@@ -105,6 +113,30 @@ exports.login = async (req, res) => {
       data: user,
       token,
     });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+exports.verifyOpt = async (req, res) => {
+  try {
+    const { otp } = req.body;
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(401).json({ message: "user not found" });
+    }
+
+    if (user.otp !== otp || user.otpExpire < Date.now()) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    user.isActive = true;
+    user.otp = undefined;
+    user.optExpire = undefined;
+    await user.save();
+
+    return res.status(200).json({ message: "OTP verified successfully" });
   } catch (error) {
     console.log(error);
   }

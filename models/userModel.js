@@ -18,11 +18,21 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  isAdmin:{
-    type:Boolean,
-    default:false
-  }
+  otp: {
+    type: Number,
+  },
+  optExpire: {
+    type: Date,
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
+  isActive: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const user = mongoose.model("User",userSchema);
- module.exports = user
+const user = mongoose.model("User", userSchema);
+module.exports = user;

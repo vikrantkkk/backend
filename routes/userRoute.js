@@ -1,5 +1,9 @@
 const express = require("express");
-const { registerUser, login } = require("../controllers/userController.js");
+const {
+  registerUser,
+  login,
+  verifyOpt,
+} = require("../controllers/userController.js");
 const authMiddleware = require("../middleware/authMiddleware.js");
 const authrizerole = require("../middleware/authrizeRole.js");
 
@@ -7,6 +11,7 @@ const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", login);
+router.post("/verify-otp", authMiddleware, verifyOpt);
 router.get("/logout", async (req, res) => {
   try {
     res.clearCookie("token");
