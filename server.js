@@ -1,14 +1,16 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
-const router = require("./routes/userRoute")
-const cookiesParser = require("cookie-parser")
+const userRouter = require("./routes/userRoute");
+const todorouter = require("./routes/todoRoute");
+const subtodorouter = require("./routes/subTodoRoutes");
+const cookiesParser = require("cookie-parser");
 
 dotenv.config();
 
 const app = express();
-app.use(express.json())
-app.use(cookiesParser())
+app.use(express.json());
+app.use(cookiesParser());
 
 //db connection
 mongoose
@@ -23,9 +25,9 @@ mongoose
 const port = process.env.PORT || 3000;
 
 //middleware
-app.use("/api/auth/v1",router)
-
-
+app.use("/api/auth/v1", userRouter);
+app.use("/api/todo/v1", todorouter);
+app.use("/api/subtodo/v1", subtodorouter);
 
 //routing
 app.get("/", (req, res) => {
