@@ -25,7 +25,7 @@ mongoose
 const port = process.env.PORT || 3000;
 
 //middleware
-app.use("/api/auth/v1", userRouter);
+app.use("/api/user/v1", userRouter);
 app.use("/api/todo/v1", todorouter);
 app.use("/api/subtodo/v1", subtodorouter);
 

@@ -3,6 +3,9 @@ const {
   registerUser,
   login,
   verifyOpt,
+  getAllUser,
+  getUserById,
+  editUser,
 } = require("../controllers/userController.js");
 const authMiddleware = require("../middleware/authMiddleware.js");
 const authrizerole = require("../middleware/authrizeRole.js");
@@ -20,10 +23,8 @@ router.get("/logout", async (req, res) => {
     console.log(error);
   }
 });
-router.get("/dashboard", authMiddleware, authrizerole, (req, res) => {
-  res
-    .status(200)
-    .json({ message: "Welcome to the dashboard!", userId: req.userId });
-});
-
+router.get("/fetch-alluser", authMiddleware, getAllUser);
+router.get("/fetch-user-by-id/:id", authMiddleware, getUserById);
+router.post("/fetch-edituser-by-id", authMiddleware, editUser);
+router.post("/fetch-edituser-by-id/:id", authMiddleware, editUser);
 module.exports = router;

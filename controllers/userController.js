@@ -141,3 +141,60 @@ exports.verifyOpt = async (req, res) => {
     console.log(error);
   }
 };
+
+exports.getAllUser = async (req, res) => {
+  try {
+    const fetchAllUser = await User.find().select("-password");
+    if (!fetchAllUser) {
+      return res.status(404).json({ message: "No user found" });
+    }
+    return res
+      .status(200)
+      .json({ message: "All users fetched successfully", data: fetchAllUser });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+exports.getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res
+      .status(200)
+      .json({ message: "User fetched successfully", data: user });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+exports.editUser = async (req, res) => {
+  try {
+    const { name, phone, email, password } = req.body;
+    const { id } = req.user ? req.user : req.params;
+    let upadatedUser = { name, phone, email };
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      upadatedUser.password = hashedPassword;
+    }
+    const user = await User.findByIdAndUpdate(
+      id,
+      {
+        $set: upadatedUser,
+      },
+      { new: true }
+    ).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res
+      .status(200)
+      .json({ message: "User updated successfully", data: user });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
