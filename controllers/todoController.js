@@ -16,9 +16,9 @@ exports.todo = async (req, res) => {
   }
 };
 
-exports.fetchAlltodo = async (req,res) => {
+exports.fetchAlltodo = async (req, res) => {
   try {
-    const todo =await Todo.find();
+    const todo = await Todo.find();
     if (!todo || todo.length === 0) {
       return res.status(404).json({ message: "No Todos found" });
     }
@@ -28,3 +28,16 @@ exports.fetchAlltodo = async (req,res) => {
     console.log(error);
   }
 };
+exports.fetchAlltodoByUser = async (req, res) => {
+  try {
+    const { id } = req.user;
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    const todo = await Todo.find({ createdBy: user._id });
+    console.log("🚀 ~ exports.fetchAlltodoByUser= ~ todo:", todo)
+    res.status(200).json({ message: "Todo fetched successfully", data: todo });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
