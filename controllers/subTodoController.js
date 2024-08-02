@@ -2,7 +2,7 @@ const User = require("../models/userModel.js");
 const subTodo = require("../models/subTodoModel.js");
 const Todo = require("../models/todoModel.js");
 const SubTodo = require("../models/subTodoModel.js");
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 exports.subTodo = async (req, res) => {
   try {
@@ -44,17 +44,17 @@ exports.fetchAllSubtodo = async (req, res) => {
   }
 };
 //populate
-exports.fetchAllSubtodoByUser = async (req,res) => {
-  try {
-    const { id } = req.user;
-    const user = await User.findById(id);
-    if (!user) return res.status(404).json({ message: "User not found"});
-    const subTodos = await subTodo.find({createdBy:user._id}).populate('createdBy')
-    res.status(200).json({subTodos})
-  } catch (error) {
-    console.log(error);
-  }
-};
+// exports.fetchAllSubtodoByUser = async (req,res) => {
+//   try {
+//     const { id } = req.user;
+//     const user = await User.findById(id);
+//     if (!user) return res.status(404).json({ message: "User not found"});
+//     const subTodos = await subTodo.find({createdBy:user._id}).populate('createdBy')
+//     res.status(200).json({subTodos})
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 
 //aggragation
 // exports.fetchAllSubtodoByUser = async (req, res) => {
@@ -111,8 +111,45 @@ exports.fetchAllSubtodoByUser = async (req,res) => {
 //     res.status(500).json({ message: "Internal Server Error" });
 //   }
 // };
+exports.fetchAllSubtodoByUser = async (req, res) => {
+  try {
+    const id = req.user;
+    const user = await SubTodo.aggregate([
+      {
+        $match: {
+          createdBy: new mongoose.Types.ObjectId(id),
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$userDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          name: "$userDetails.name",
+          phone: "$userDetails.phone",
+          email: "$userDetails.email",
+          task:1,
+          completed: 1,
+        },
+      },
+    ]);
 
-
+    return res.status(200).json({message:"subTodo find Successfully", data: user });
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 exports.getallSubtodofSeperatetodo = async (req, res) => {
   try {
